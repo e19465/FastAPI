@@ -2,7 +2,7 @@ import os
 import json
 import jwt
 from fastapi import status, APIRouter, Request, Depends
-from . import models
+from .. import models
 from fastapi.responses import JSONResponse
 from database import engine, get_db
 from sqlalchemy.orm import Session
@@ -11,10 +11,18 @@ from auth.getTokens import get_access_token, get_refresh_token
 
 
 #! configuration ########
-refresh_router = APIRouter()
+refresh_router = APIRouter(
+    prefix="/token",
+    tags=['Token']
+)
 models.Base.metadata.create_all(bind=engine)
 #! end configuration ####
 
+
+#! IF YOUR DATABASE HAS NOT THIS TABLE, JUST RUN THIS END POINT ##
+@refresh_router.get("/create_table", status_code=status.HTTP_200_OK)
+def create_table():
+    return {"message":"table is created"}
 
 # function to refresh the tokens and get new tokens
 @refresh_router.post("/refresh", status_code=status.HTTP_200_OK)
@@ -58,10 +66,10 @@ async def refresh_token_fn(request: Request, db: Session = Depends(get_db)):
                 decoded_refresh_token = jwt.decode(refreshToken, refresh_secret_key, algorithms=['HS256'])
                 
                 # Generate new access token
-                new_access_token = get_access_token(decoded_refresh_token)
+                new_access_token = get_access_token(decoded_refresh_token['user_id'])
 
                 # Generate new refresh token
-                new_refresh_token = get_refresh_token(decoded_refresh_token)
+                new_refresh_token = get_refresh_token(decoded_refresh_token['user_id'])
 
                 # Remove previous refresh token from database
                 found_refresh_token.delete()

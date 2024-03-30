@@ -1,14 +1,15 @@
+import os
 import bcrypt
 from database import engine, get_db
 from sqlalchemy.orm import Session
 from fastapi.responses import JSONResponse
 from fastapi import APIRouter, status, Depends, Request
-from .validators import UserRegisterValidator, UserLoginValidator, UserAccountUpdateValidator,UpdateddUserValidator
-from . import models
 from auth.getTokens import get_access_token, get_refresh_token
 from auth.verifyTokens import verify_access_token
 from common.models import RefreshToken
-
+from backend.common.routes.logout import token_clearing
+from . import models
+from .validators import UserRegisterValidator, UserLoginValidator, UserAccountUpdateValidator,UpdateddUserValidator
 
 ##########! configuration ##################
 user_router = APIRouter(
@@ -18,7 +19,12 @@ user_router = APIRouter(
 models.Base.metadata.create_all(bind=engine)
 
 
+#! IF YOUR DATABASE HAS NOT THIS TABLE, JUST RUN THIS END POINT ##
+@user_router.get("/create_table", status_code=status.HTTP_200_OK)
+def create_table():
+    return {"message":"table is created"}
 
+#! password hashing and verifying ##########
 def hash_password(password):
     hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(rounds=12))
     return hashed_pw.decode('utf-8')
@@ -51,12 +57,12 @@ async def create_user(new_user: UserRegisterValidator, db: Session = Depends(get
         user = models.User(**new_user.model_dump())
         db.add(user)
         db.commit()
-        return user
+        return {"message":"Registration Successfull"}
     except Exception as e:
         print(e)
         return JSONResponse({"Error":str(e)}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-#!################### LOGIN USER ##########################################################
+#!################### LOGIN USER #######################################################
 @user_router.post("/login", status_code=status.HTTP_200_OK)
 async def login_user(credentials: UserLoginValidator, db: Session = Depends(get_db)):
     """
@@ -79,9 +85,8 @@ async def login_user(credentials: UserLoginValidator, db: Session = Depends(get_
             return JSONResponse({"Error":"Wrong Credentials"}, status_code=status.HTTP_400_BAD_REQUEST)
         
 
-        # give desired token expiration time in minutes
-        access_token = get_access_token(str(found_user.id), 10) # expires in 10 minutes
-        refresh_token = get_refresh_token(str(found_user.id), 60) # expires in 60 minutes
+        access_token = get_access_token(str(found_user.id))
+        refresh_token = get_refresh_token(str(found_user.id))
         
         # Create a new RefreshToken instance and assign the token value
         new_refresh_token = RefreshToken(token=refresh_token)
@@ -98,6 +103,7 @@ async def login_user(credentials: UserLoginValidator, db: Session = Depends(get_
         return JSONResponse({"Error":str(e)}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 
+#!################## ACCOUNT UPDATE ####################################################
 @user_router.patch("/account/update",response_model=UpdateddUserValidator ,status_code=status.HTTP_200_OK)
 async def update_user(update_data: UserAccountUpdateValidator,request:Request, db: Session = Depends(get_db)):
 
@@ -141,7 +147,7 @@ async def update_user(update_data: UserAccountUpdateValidator,request:Request, d
 
     return updated_user
 
-
+#!################## ACCOUNT DELETE ####################################################
 @user_router.delete("/account/delete", status_code=status.HTTP_200_OK)
 async def delete_user(request:Request, db: Session = Depends(get_db)):
     """
@@ -166,12 +172,18 @@ async def delete_user(request:Request, db: Session = Depends(get_db)):
     if not found_user:
         return JSONResponse({"error":"user not found"}, status_code=status.HTTP_404_NOT_FOUND)
 
-    # Delete the user
-    db.delete(found_user)
 
-    # Commit the changes to the database
-    db.commit()
+    is_tokens_cleared = await token_clearing(db, user_id, os.environ.get("REFRESH_TOKEN_SECRET"))
 
-    return {"message":"user deleted successfully"}
+    if is_tokens_cleared:
+        # Delete the user
+        db.delete(found_user)
+
+        # Commit the changes to the database
+        db.commit()
+
+        return {"message":"user deleted successfully"}
+    else:
+        return JSONResponse({"error":"an error occured during account deletion. Please try again"}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

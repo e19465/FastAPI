@@ -3,35 +3,31 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from apps.posts.routes import post_router
 from apps.users.routes import user_router
-from common.logout import logout_router
-from common.refreshTokens import refresh_router
+from backend.common.routes.logout import logout_router
+from backend.common.routes.refreshTokens import refresh_router
+from backend.common.routes.likes import likes_router
+#!# end imports #######################
 
-#!################### end imports ###########################################
 
-
-#!################### configurations start ###################################
+#!# configurations start ##############
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# index route
+
+#! index route
 @app.get("/")
 async def get_index():
     return FileResponse("static/index.html")
 
 
-
-
-#######################! routing configurations ##############################
+#! routing configurations #####
 app.include_router(post_router)
 app.include_router(user_router)
 app.include_router(logout_router)
 app.include_router(refresh_router)
+app.include_router(likes_router)
 
-
-
-
-
-#404 page
+#! 404 page
 @app.get("/{path}", status_code=404)
 async def not_found(request: Request, path: str):
     return FileResponse("static/404.html")

@@ -4,6 +4,7 @@ from sqlalchemy import Column,String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
+from sqlalchemy.orm import relationship
 
 #########################################################################################
 class User(Base):

@@ -1,10 +1,11 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from . import models
 from database import engine, get_db
 from fastapi import status, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
+from auth.verifyTokens import verify_access_token
 from .validators import GetPostResponseValidator, CreatePostResponseValidator, UpdatePostValidator, CreatePostValidator, UpdateResponseValidator
 ##############################################################################################################
 
@@ -16,33 +17,75 @@ post_router = APIRouter(
 models.Base.metadata.create_all(bind=engine)
 
 
+#! IF YOUR DATABASE HAS NOT THIS TABLE, JUST RUN THIS END POINT ##
+@post_router.get("/create_table", status_code=status.HTTP_200_OK)
+def create_table():
+    return {"message":"table is created"}
 
 
 
 
 
-
-#!########### GET ALL POSTS #########################
+#!########### GET ALL POSTS ##########################
 @post_router.get("/getAll",status_code=status.HTTP_200_OK, response_model=List[GetPostResponseValidator])
-def get_all_posts(db: Session = Depends(get_db)):
+def get_all_posts(limit: int = 0,skip: int = 0, search: Optional[str] = "", db: Session = Depends(get_db)):
     """
     # Retrieve all posts.
 
-    **Response:**
+    **Args:**
+        
+        - limit (int query parameter): Maximum number of posts to retrieve. Set to 0 to retrieve all posts.
+        - skip (int query parameter): Number of posts to skip before retrieving.
 
-        List of all posts.
+    **Returns:**
+
+        - List of posts matching the specified criteria.
     """
     try:
-        all_posts = db.query(models.Post).all()
-        return  all_posts
+        all_posts = None
+        if limit > 0:
+            all_posts = db.query(models.Post).limit(limit).all()
+        if skip > 0:
+            all_posts = db.query(models.Post).offset(skip).all()
+        if search != "":
+            all_posts = db.query(models.Post).filter(models.Post.title.contains(search))
+        if all_posts == None:
+            all_posts = db.query(models.Post).all()
+
+        return all_posts
     except Exception as e: 
         return {"error": str(e)}
 
+#!########## GET ALL POSTS BELONGS TO SPECIFIC USER ##
+@post_router.get("/getAll/user",status_code=status.HTTP_200_OK, response_model=List[GetPostResponseValidator])
+def get_all_posts(request: Request, db: Session = Depends(get_db)):
+    """
+    # Retrieve all posts belongs to specific user.
 
+    **Args:**
+
+        - access token of the user need to send in requets headers
+    
+    **Response:**
+
+        List of all posts belongs to user.
+    """
+
+    user_id = verify_access_token(request)
+
+    # if user_id is error response instead of actual user_id, return error immediately
+    if isinstance(user_id, JSONResponse):
+        return user_id
+
+    try:
+        all_posts_of_user = db.query(models.Post).filter(models.Post.user_id == user_id)
+        return  all_posts_of_user
+    except Exception as e: 
+        return JSONResponse({"error": "an error occured during getting posts, Please try again"}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 #!########### CREATE NEW POST ########################
 @post_router.post("/create", response_model=CreatePostResponseValidator, status_code=status.HTTP_201_CREATED)
-async def create_post(new_post: CreatePostValidator, db: Session = Depends(get_db)):
+async def create_post(new_post: CreatePostValidator,request:Request, db: Session = Depends(get_db)):
     """
     # Create a new post.
 
@@ -54,9 +97,16 @@ async def create_post(new_post: CreatePostValidator, db: Session = Depends(get_d
 
         CreatePostResponseValidator: Details of the newly created post.
     """
+    user_id = verify_access_token(request)
+
+    # if user_is is a JSON error response instead of actual ID, then retuen error response immediately
+    if isinstance(user_id, JSONResponse):
+        return user_id
+    
     try:
-        new_post.model_dump()
-        post = models.Post(**new_post.model_dump())
+        new_post_data = new_post.model_dump()
+        new_post_data['user_id'] = user_id
+        post = models.Post(**new_post_data)
         db.add(post)
         db.commit()
         return post

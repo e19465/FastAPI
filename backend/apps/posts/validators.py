@@ -1,7 +1,7 @@
 from uuid import UUID, uuid4
 from pydantic import BaseModel, Field
 from datetime import datetime
-
+from apps.users.validators import UserOwnerPostResponse
 
 class PostBaseValidator(BaseModel):
     title: str
@@ -27,6 +27,7 @@ class UpdatePostValidator(PostBaseValidator):
 class CreatePostResponseValidator(PostBaseValidator):
     id: UUID = Field(default_factory=uuid4)
     created_at: datetime = Field(default_factory=datetime.now)
+    
 
     # Enable ORM
     class Config:
@@ -34,7 +35,8 @@ class CreatePostResponseValidator(PostBaseValidator):
 
 # Response validation for GET requests (GET all or GET one)
 class GetPostResponseValidator(CreatePostResponseValidator):
-    pass
+    user_id: UUID = Field(default_factory=uuid4)
+    owner: UserOwnerPostResponse
 
 
 # Response validation after updating value

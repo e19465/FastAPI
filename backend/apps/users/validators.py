@@ -1,5 +1,7 @@
-from pydantic import BaseModel, EmailStr, validator
+from pydantic import BaseModel, EmailStr, validator, Field
 from typing import Optional
+from uuid import UUID, uuid4
+
 
 
 class UserRegisterValidator(BaseModel):
@@ -34,3 +36,6 @@ class UpdateddUserValidator(BaseModel):
     username: str
     email: EmailStr
     phone_number: str
+
+class UserOwnerPostResponse(UpdateddUserValidator):
+    id: UUID = Field(default_factory=uuid4)
