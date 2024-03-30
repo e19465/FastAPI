@@ -2,11 +2,12 @@ import os
 import jwt
 from auth.verifyTokens import verify_access_token
 from fastapi.responses import JSONResponse
-from database import engine, get_db
+from database import get_db, engine
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, status, Depends, Request
-from .. import models
 from apps.users.models import User
+from apps.token.models import RefreshToken
+from apps.token import models
 ##########################################################################
 
 #! configuration ######
@@ -52,7 +53,7 @@ async def token_clearing(db, userId, refresh_secret_key):
             found_user = db.query(User).filter(User.id == userId).first()
 
             if found_user:
-                all_refresh_tokens = db.query(models.RefreshToken).all()
+                all_refresh_tokens = db.query(RefreshToken).all()
 
                 if not (all_refresh_tokens):
                     return JSONResponse({"error":"something went wrong! please try again"}, status_code=status.HTTP_404_NOT_FOUND)
@@ -62,7 +63,7 @@ async def token_clearing(db, userId, refresh_secret_key):
                     decoded_refresh_token = jwt.decode(refresh_token, refresh_secret_key, algorithms=['HS256'])
                     token_user_id = decoded_refresh_token['user_id']
                     if token_user_id == userId:
-                        db.query(models.RefreshToken).filter(models.RefreshToken.token == refresh_token).delete()
+                        db.query(RefreshToken).filter(RefreshToken.token == refresh_token).delete()
                         db.commit()
                 
                 return True

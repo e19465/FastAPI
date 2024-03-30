@@ -5,7 +5,7 @@ from database import engine, get_db
 from sqlalchemy.orm import Session
 from fastapi.responses import JSONResponse
 from fastapi import status, APIRouter, Request, Depends
-from .. import models
+from . import models
 from auth.verifyTokens import verify_access_token
 from auth.getTokens import get_access_token, get_refresh_token
 

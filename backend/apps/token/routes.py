@@ -2,7 +2,7 @@ import os
 import json
 import jwt
 from fastapi import status, APIRouter, Request, Depends
-from .. import models
+from  . import models
 from fastapi.responses import JSONResponse
 from database import engine, get_db
 from sqlalchemy.orm import Session

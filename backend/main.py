@@ -3,9 +3,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from apps.posts.routes import post_router
 from apps.users.routes import user_router
-from backend.common.routes.logout import logout_router
-from backend.common.routes.refreshTokens import refresh_router
-from backend.common.routes.likes import likes_router
+from apps.common.logout import logout_router
+from apps.token.routes import refresh_router
+from apps.likes.routes import likes_router
 #!# end imports #######################
 
 

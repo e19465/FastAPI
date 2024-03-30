@@ -6,8 +6,8 @@ from fastapi.responses import JSONResponse
 from fastapi import APIRouter, status, Depends, Request
 from auth.getTokens import get_access_token, get_refresh_token
 from auth.verifyTokens import verify_access_token
-from common.models import RefreshToken
-from backend.common.routes.logout import token_clearing
+from apps.token.models import RefreshToken
+from apps.common.logout import token_clearing
 from . import models
 from .validators import UserRegisterValidator, UserLoginValidator, UserAccountUpdateValidator,UpdateddUserValidator
 
@@ -78,9 +78,8 @@ async def login_user(credentials: UserLoginValidator, db: Session = Depends(get_
         if not found_user:
             return JSONResponse({"Error":"Wrong Credentials"}, status_code=status.HTTP_400_BAD_REQUEST)
 
-        found_user_password = found_user.password
 
-        is_password_correct = verify_password(credentials.password, found_user_password)
+        is_password_correct = verify_password(credentials.password, found_user.password)
         if not is_password_correct:
             return JSONResponse({"Error":"Wrong Credentials"}, status_code=status.HTTP_400_BAD_REQUEST)
         

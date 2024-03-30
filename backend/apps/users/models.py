@@ -4,13 +4,10 @@ from sqlalchemy import Column,String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
-from sqlalchemy.orm import relationship
 
 #########################################################################################
 class User(Base):
-
     __tablename__ = "users"
-
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
     username = Column(String, nullable=False)
     password = Column(String, nullable=False)

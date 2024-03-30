@@ -20,21 +20,26 @@ SQLALCHEMY_DATABASE_URL = os.environ.get('SQLALCHEMY_DATABASE_URL')
 # # SQLALCHEMY_DATABASE_URL = f"postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}/{DATABASE_NAME}"
 
 
-#! Define engine and session
-engine = None
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
 
 
 #! Establish database connection
+engine = None
 while engine is None:
     try:
         engine = create_engine(SQLALCHEMY_DATABASE_URL)
         print("Database connected successfully!")  # Print success message
     except OperationalError as e:
+        engine = None
         print(f"Failed to connect to the database: {e}")
         print("Retrying in 5 seconds...")
         time.sleep(5)
+
+
+#! create configurations
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
 
 
 #! Define session generator function
