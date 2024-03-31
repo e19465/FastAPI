@@ -37,6 +37,7 @@ class CreatePostResponseValidator(PostBaseValidator):
 class GetPostResponseValidator(CreatePostResponseValidator):
     user_id: UUID = Field(default_factory=uuid4)
     owner: UserOwnerPostResponse
+    likes: int
 
 
 # Response validation after updating value

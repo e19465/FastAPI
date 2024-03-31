@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Request
-from . import models
-from database import engine, get_db
 from fastapi import status, Depends
 from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
+from database import engine, get_db
+from . import models
 from typing import List, Optional
+from sqlalchemy.orm import Session
+from sqlalchemy import func
 from auth.verifyTokens import verify_access_token
+from apps.likes.models import Likes
 from .validators import GetPostResponseValidator, CreatePostResponseValidator, UpdatePostValidator, CreatePostValidator, UpdateResponseValidator
 ##############################################################################################################
 
@@ -24,6 +26,14 @@ def create_table():
 
 
 
+#! GET likes for one post ###
+def get_post_likes(post, db):
+    likes_count = (
+        db.query(func.count(Likes.post_id))
+        .filter(Likes.post_id == post.id)
+        .scalar()
+    )
+    return likes_count
 
 
 #!########### GET ALL POSTS ##########################
@@ -43,14 +53,22 @@ def get_all_posts(limit: int = 0,skip: int = 0, search: Optional[str] = "", db: 
     """
     try:
         all_posts = None
+        query = db.query(models.Post)
+        if search:
+            all_posts = query.filter(models.Post.title.contains(search)).all()
+            query = query.filter(models.Post.title.contains(search))
         if limit > 0:
-            all_posts = db.query(models.Post).limit(limit).all()
+            all_posts = query.limit(limit).all()
+            query = query.limit(limit)
         if skip > 0:
-            all_posts = db.query(models.Post).offset(skip).all()
-        if search != "":
-            all_posts = db.query(models.Post).filter(models.Post.title.contains(search))
+            all_posts = query.offset(skip).all()
+            query = query.offset(skip)
         if all_posts == None:
             all_posts = db.query(models.Post).all()
+        
+        print(all_posts)
+        for post in all_posts:
+            post.likes =  get_post_likes(post, db)
 
         return all_posts
     except Exception as e: 
@@ -132,6 +150,7 @@ async def get_one_post(post_id:str, db: Session = Depends(get_db)):
         one_post = db.query(models.Post).filter(models.Post.id == post_id).first()
         if not one_post:
             return JSONResponse({"error":f"Post with id {post_id} not found"}, status_code=status.HTTP_404_NOT_FOUND)
+        one_post.likes = get_post_likes(one_post, db)
         return one_post
     except Exception as e:
         return {"error": str(e)}
