@@ -1,10 +1,9 @@
 import os
-import json
 import jwt
 from fastapi import status, APIRouter, Request, Depends
-from  . import models
+import models
 from fastapi.responses import JSONResponse
-from database import engine, get_db
+from database import get_db
 from sqlalchemy.orm import Session
 from auth.verifyTokens import verify_access_token
 from auth.getTokens import get_access_token, get_refresh_token
@@ -15,7 +14,6 @@ refresh_router = APIRouter(
     prefix="/token",
     tags=['Token']
 )
-models.Base.metadata.create_all(bind=engine)
 #! end configuration ####
 
 

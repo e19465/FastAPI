@@ -1,22 +1,21 @@
+import models
+from models import RefreshToken
 import os
 import bcrypt
-from database import engine, get_db
+from database import get_db
 from sqlalchemy.orm import Session
 from fastapi.responses import JSONResponse
 from fastapi import APIRouter, status, Depends, Request
 from auth.getTokens import get_access_token, get_refresh_token
 from auth.verifyTokens import verify_access_token
-from apps.token.models import RefreshToken
-from apps.common.logout import token_clearing
-from . import models
-from .validators import UserRegisterValidator, UserLoginValidator, UserAccountUpdateValidator,UpdateddUserValidator
+from routes.common.logout import token_clearing
+from validators.user.request import UserRegisterValidator, UserLoginValidator, UserAccountUpdateValidator,UpdateddUserValidator
 
 ##########! configuration ##################
 user_router = APIRouter(
     prefix="/user",
     tags=['User']
 )
-models.Base.metadata.create_all(bind=engine)
 
 
 

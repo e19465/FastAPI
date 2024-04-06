@@ -1,22 +1,17 @@
-import os
-import json
-import jwt
-from database import engine, get_db
+from database import  get_db
 from sqlalchemy.orm import Session
 from fastapi.responses import JSONResponse
 from fastapi import status, APIRouter, Request, Depends
-from . import models
-from .validators import CreateLikeValidator
+import models
+from validators.like.request import CreateLikeValidator
 from auth.verifyTokens import verify_access_token
-from auth.getTokens import get_access_token, get_refresh_token
-from apps.posts.models import Post
+from models import Post
 
 #! configuration ########
 likes_router = APIRouter(
     prefix="/likes",
     tags=['Likes']
 )
-models.Base.metadata.create_all(bind=engine)
 #! end configuration ####
 
 

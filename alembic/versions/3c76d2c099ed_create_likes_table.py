@@ -1,8 +1,8 @@
-"""create table likes
+"""create likes table
 
-Revision ID: cdd05fa288c5
-Revises: 738ed03a69dc
-Create Date: 2024-04-06 22:56:51.146938
+Revision ID: 3c76d2c099ed
+Revises: 3cd5055375dd
+Create Date: 2024-04-07 04:40:17.448793
 
 """
 from typing import Sequence, Union
@@ -12,11 +12,10 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'cdd05fa288c5'
-down_revision: Union[str, None] = '738ed03a69dc'
+revision: str = '3c76d2c099ed'
+down_revision: Union[str, None] = '3cd5055375dd'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
-
 
 def upgrade():
     op.create_table(
@@ -27,4 +26,3 @@ def upgrade():
 
 def downgrade():
     op.drop_table('likes')
-

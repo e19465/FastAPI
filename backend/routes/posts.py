@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Request
 from fastapi import status, Depends
 from fastapi.responses import JSONResponse
-from database import engine, get_db
-from . import models
+from database import get_db
+import models
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from auth.verifyTokens import verify_access_token
-from apps.likes.models import Likes
-from .validators import GetPostResponseValidator, CreatePostResponseValidator, UpdatePostValidator, CreatePostValidator, UpdateResponseValidator
+from models import Likes
+from validators.post.request import GetPostResponseValidator, CreatePostResponseValidator, UpdatePostValidator, CreatePostValidator, UpdateResponseValidator
 ##############################################################################################################
 
 ##########! configuration ##################
@@ -16,7 +16,6 @@ post_router = APIRouter(
     prefix="/posts",
     tags=['Post']
 )
-models.Base.metadata.create_all(bind=engine)
 
 
 

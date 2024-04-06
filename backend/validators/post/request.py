@@ -1,7 +1,7 @@
 from uuid import UUID, uuid4
 from pydantic import BaseModel, Field
 from datetime import datetime
-from apps.users.validators import UserOwnerPostResponse
+from validators.user.request import UserOwnerPostResponse
 
 class PostBaseValidator(BaseModel):
     title: str

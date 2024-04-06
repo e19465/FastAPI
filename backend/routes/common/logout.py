@@ -5,14 +5,12 @@ from fastapi.responses import JSONResponse
 from database import get_db, engine
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, status, Depends, Request
-from apps.users.models import User
-from apps.token.models import RefreshToken
-from apps.token import models
+from models import User, RefreshToken
+
 ##########################################################################
 
 #! configuration ######
 logout_router = APIRouter()
-models.Base.metadata.create_all(bind=engine)
 #! end configuration ##
 
 @logout_router.delete("/logout", status_code=status.HTTP_200_OK)
