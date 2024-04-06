@@ -19,10 +19,6 @@ user_router = APIRouter(
 models.Base.metadata.create_all(bind=engine)
 
 
-#! IF YOUR DATABASE HAS NOT THIS TABLE, JUST RUN THIS END POINT ##
-@user_router.get("/create_table", status_code=status.HTTP_200_OK)
-def create_table():
-    return {"message":"table is created"}
 
 #! password hashing and verifying ##########
 def hash_password(password):

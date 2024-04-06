@@ -6,12 +6,24 @@ from apps.users.routes import user_router
 from apps.common.logout import logout_router
 from apps.token.routes import refresh_router
 from apps.likes.routes import likes_router
+from fastapi.middleware.cors import CORSMiddleware
+from middleware import cors_settings
 #!# end imports #######################
 
+
+ 
 
 #!# configurations start ##############
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+#! adding middleware
+app.add_middleware(
+    CORSMiddleware,
+    **cors_settings
+)
+
 
 
 #! index route

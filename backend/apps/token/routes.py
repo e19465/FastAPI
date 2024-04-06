@@ -19,11 +19,6 @@ models.Base.metadata.create_all(bind=engine)
 #! end configuration ####
 
 
-#! IF YOUR DATABASE HAS NOT THIS TABLE, JUST RUN THIS END POINT ##
-@refresh_router.get("/create_table", status_code=status.HTTP_200_OK)
-def create_table():
-    return {"message":"table is created"}
-
 # function to refresh the tokens and get new tokens
 @refresh_router.post("/refresh", status_code=status.HTTP_200_OK)
 async def refresh_token_fn(request: Request, db: Session = Depends(get_db)):

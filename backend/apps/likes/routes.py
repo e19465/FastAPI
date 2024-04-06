@@ -20,11 +20,6 @@ models.Base.metadata.create_all(bind=engine)
 #! end configuration ####
 
 
-#! IF YOUR DATABASE HAS NOT THIS TABLE, JUST RUN THIS END POINT ##
-@likes_router.get("/create_table", status_code=status.HTTP_200_OK)
-def create_table():
-    return {"message":"table is created"}
-
 @likes_router.post("/like", status_code=status.HTTP_201_CREATED)
 async def add_like(like: CreateLikeValidator, request: Request, db: Session = Depends(get_db)):
     user_id = verify_access_token(request)

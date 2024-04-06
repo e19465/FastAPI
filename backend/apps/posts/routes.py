@@ -19,11 +19,6 @@ post_router = APIRouter(
 models.Base.metadata.create_all(bind=engine)
 
 
-#! IF YOUR DATABASE HAS NOT THIS TABLE, JUST RUN THIS END POINT ##
-@post_router.get("/create_table", status_code=status.HTTP_200_OK)
-def create_table():
-    return {"message":"table is created"}
-
 
 
 #! GET likes for one post ###
