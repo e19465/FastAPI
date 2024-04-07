@@ -1,8 +1,8 @@
 """create posts table
 
-Revision ID: 3cd5055375dd
-Revises: 4dcf4abfae8f
-Create Date: 2024-04-07 04:37:59.464050
+Revision ID: a94aad86d43b
+Revises: 2e6d06394a32
+Create Date: 2024-04-07 08:57:10.198709
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '3cd5055375dd'
-down_revision: Union[str, None] = '4dcf4abfae8f'
+revision: str = 'a94aad86d43b'
+down_revision: Union[str, None] = '2e6d06394a32'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -30,5 +30,5 @@ def upgrade():
 
 
 
-def downgrade() -> None:
+def downgrade():
     op.drop_table('posts')
